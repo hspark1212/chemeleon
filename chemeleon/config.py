@@ -232,14 +232,6 @@ def chemeleon_clip_composition_crystal_system():
 
 
 @ex.named_config
-def chemeleon_bert_prompt():
-    exp_name = "chemeleon_bert_prompt"
-    group_name = "prompt"
-
-    text_targets = ["prompt"]
-
-
-@ex.named_config
 def chemeleon_clip_prompt():
     exp_name = "chemeleon_clip_prompt"
     group_name = "prompt"
@@ -254,17 +246,23 @@ def chemeleon_clip_prompt():
 
 
 @ex.named_config
-def chemeleon_bert_composition_stability():
-    exp_name = "chemeleon_bert_composition_stability"
-    group_name = "composition_stability"
-
-    text_targets = ["composition", "stability"]
-
-
-@ex.named_config
 def chemeleon_clip_composition_stability():
     exp_name = "chemeleon_clip_composition_stability"
     group_name = "composition_stability"
 
     text_targets = ["composition", "stability"]
     text_encoder = "chemeleon/clip-mp-composition_stablity"
+
+
+###################################
+##### composition + metallic #####
+###################################
+
+
+@ex.named_config
+def chemeleon_clip_composition_metallic():
+    exp_name = "chemeleon_clip_composition_metallic"
+    group_name = "composition_metallic"
+
+    text_targets = ["composition", "metallic"]
+    text_encoder = "chemeleon/clip-mp-composition_metallic"

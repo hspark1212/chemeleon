@@ -10,10 +10,12 @@ MODEL_NAMES = [
     "chemeleon/clip-mp-composition_crystalsystem",
     "chemeleon/clip-mp-prompt",
     "chemeleon/clip-mp-composition_stablity",
+    "chemeleon/clip-mp-composition_metallic",
 ]
 ARTIFACT_PATHS = {
     "chemeleon/clip-mp-composition": "hspark1212/Chemeleon_v0.1.1/model-hlfus38h:v1",
     "chemeleon/clip-mp-composition_crystalsystem": "hspark1212/Chemeleon_v0.1.1/model-b0xyc1sy:v1",
-    "chemeleon/clip-mp-prompt": "hspark1212/Chemeleon_v0.1.1/model-upy53q4b:v1",
-    "chemeleon/clip-mp-composition_stablity": "",  # TODO
+    "chemeleon/clip-mp-prompt": "hspark1212/Chemeleon_v0.2.1/model-6smllssp:v1",
+    "chemeleon/clip-mp-composition_stablity": "hspark1212/Chemeleon_v0.2.1/model-7qep243l:v1",
+    "chemeleon/clip-mp-composition_metallic": "hspark1212/Chemeleon_v0.2.1/model-iwqctcdr:v1",
 }
