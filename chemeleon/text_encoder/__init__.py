@@ -9,9 +9,17 @@ MODEL_NAMES = [
     "chemeleon/clip-mp-composition",
     "chemeleon/clip-mp-composition_crystalsystem",
     "chemeleon/clip-mp-prompt",
+    "chemeleon/clip-mp-mineral",
+    "chemeleon/clip-mp_random_split-composition",
+    "chemeleon/clip-mp_random_split-prompt",
+    "chemeleon/clip-mp_20-composition",
 ]
 ARTIFACT_PATHS = {
     "chemeleon/clip-mp-composition": "hspark1212/Chemeleon_v0.1.1/model-hlfus38h:v1",
     "chemeleon/clip-mp-composition_crystalsystem": "hspark1212/Chemeleon_v0.1.1/model-b0xyc1sy:v1",
     "chemeleon/clip-mp-prompt": "hspark1212/Chemeleon_v0.1.1/model-upy53q4b:v1",
+    "chemeleon/clip-mp_random_split-composition": "hspark1212/Chemeleon_v0.1.1_random_split/model-gvxwkykb:v1",
+    "chemeleon/clip-mp_random_split-prompt": "hspark1212/Chemeleon_v0.1.1_random_split/model-py0nwtn6:v1",
+    "chemeleon/clip-mp_20-composition": "hspark1212/Chemeleon_v0.1.1_mp-20/model-wxzdl494:v1",
+    "chemeleon/clip-mp-mineral": "hspark1212/Chemeleon_v0.1.1_mineral/model-667vsj0e:v1",
 }

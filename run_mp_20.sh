@@ -10,11 +10,13 @@ python -u run_crystal_clip.py \
     text_targets="composition"
 
 # diffusion (composition)
-python -u run.py with project_name="Chemeleon_v0.1.1_mp-20" \
+python -u run.py \
+    with project_name="Chemeleon_v0.1.1_mp-20" \
     dataset_name="mp-20" \
     data_dir="data/mp-20" \
     exp_name="chemeleon_clip_composition" \
     group_name="composition" \
-    text_targets="composition"
+    text_targets="composition" \
+    text_encoder="chemeleon/clip-mp_20-composition"
 
 # evaluation
