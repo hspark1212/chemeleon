@@ -92,10 +92,11 @@ def test_evaluate(
         try:
             # sample
             natoms = len(test_st)
-            batch_natoms = [natoms] * n_samples
-            batch_texts = [text] * n_samples
             gen_atoms_list = model.sample(
-                natoms=batch_natoms, texts=batch_texts, cond_scale=cond_scale
+                text_input=text,
+                n_atoms=natoms,
+                n_samples=n_samples,
+                cond_scale=cond_scale,
             )
             gen_st_list = [
                 AseAtomsAdaptor.get_structure(atoms) for atoms in gen_atoms_list
