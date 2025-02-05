@@ -1,7 +1,5 @@
-from typing import Union, List
 from pathlib import Path
 from collections import defaultdict
-import pickle  # TODO: remove this
 
 from tqdm import tqdm
 from fire import Fire
@@ -20,13 +18,13 @@ from chemeleon.modules.chemeleon import Chemeleon
 
 
 def test_evaluate(
-    model_path: Union[str, Path],
-    test_data: Union[str, Path] = "data/mp-40/test.csv",
+    model_path: str | Path,
+    test_data: str | Path = "data/mp-40/test.csv",
     n_samples: int = 20,
     cond_scale: float = 2.0,
     mace_dtype: str = "float32",
     mace_device: str = "cuda",
-    save_path: Union[str, Path] = "results",
+    save_path: str | Path = "results",
     wandb_log: bool = False,
     wandb_project: str = "Chemeleon_test",
     wandb_group: str = "test",
@@ -92,10 +90,11 @@ def test_evaluate(
         try:
             # sample
             natoms = len(test_st)
-            batch_natoms = [natoms] * n_samples
-            batch_texts = [text] * n_samples
             gen_atoms_list = model.sample(
-                natoms=batch_natoms, texts=batch_texts, cond_scale=cond_scale
+                text_input=text,
+                n_atoms=natoms,
+                n_samples=n_samples,
+                cond_scale=cond_scale,
             )
             gen_st_list = [
                 AseAtomsAdaptor.get_structure(atoms) for atoms in gen_atoms_list
@@ -174,7 +173,7 @@ def test_evaluate(
         wandb.finish()
 
 
-def test_valid(gen_st_list: List[Structure]):
+def test_valid(gen_st_list: list[Structure]):
     valid_gen_st_list = []
     for st in gen_st_list:
         # check if the lattice length < 60A
@@ -189,13 +188,13 @@ def test_valid(gen_st_list: List[Structure]):
     return valid_gen_st_list
 
 
-def test_unique(st_list: List[Structure]):
+def test_unique(st_list: list[Structure]):
     sm = StructureMatcher()
     output_sm = sm.group_structures(st_list)
     return len(output_sm)
 
 
-def test_structure_matching(st_list: List[Structure], ref_st: Structure):
+def test_structure_matching(st_list: list[Structure], ref_st: Structure):
     sm = StructureMatcher()
     num_match = 0
     for st in st_list:
@@ -204,7 +203,7 @@ def test_structure_matching(st_list: List[Structure], ref_st: Structure):
     return num_match
 
 
-def test_meta_stable(st_list: List[Structure], ref_st: Structure, mace_calc):
+def test_meta_stable(st_list: list[Structure], ref_st: Structure, mace_calc):
     ref_energy = mace_calc.get_potential_energy(ref_st.to_ase_atoms())
     num_meta_stable = 0
     num_same_comp = 0
@@ -220,7 +219,7 @@ def test_meta_stable(st_list: List[Structure], ref_st: Structure, mace_calc):
     return num_meta_stable / num_same_comp if num_same_comp > 0 else np.NaN
 
 
-def test_composition_matching(st_list: List[Structure], ref_st: Structure):
+def test_composition_matching(st_list: list[Structure], ref_st: Structure):
     num_match = 0
     for st in st_list:
         if ref_st.composition == st.composition:
@@ -229,7 +228,7 @@ def test_composition_matching(st_list: List[Structure], ref_st: Structure):
 
 
 def test_crystal_system_matching(
-    st_list: List[Structure], ref_st: Structure, symprec=0.1, angle_tolerance=10
+    st_list: list[Structure], ref_st: Structure, symprec=0.1, angle_tolerance=10
 ):
     num_match = 0
     ref_sga = SpacegroupAnalyzer(
@@ -250,13 +249,13 @@ def test_crystal_system_matching(
 
 
 def test_lattice_system_matching(
-    st_list: List[Structure], ref_st: Structure, symprec=0.1, angle_tolerance=10
+    st_list: list[Structure], ref_st: Structure, symprec=0.1, angle_tolerance=10
 ):
     num_match = 0
     ref_sga = SpacegroupAnalyzer(
         ref_st, symprec=symprec, angle_tolerance=angle_tolerance
     )
-    ref_lattice_system = ref_sga.get_lattice_system()
+    ref_lattice_system = ref_sga.get_lattice_type()
     for st in st_list:
         test_st = Structure(
             lattice=st.lattice,
@@ -266,7 +265,7 @@ def test_lattice_system_matching(
         sga = SpacegroupAnalyzer(
             test_st, symprec=symprec, angle_tolerance=angle_tolerance
         )
-        lattice_system = sga.get_lattice_system()
+        lattice_system = sga.get_lattice_type()
         if lattice_system == ref_lattice_system:
             num_match += 1
     return num_match
