@@ -39,3 +39,20 @@ python -u run.py \
     text_encoder="chemeleon/clip-mp_random_split-prompt"
 
 # evaluation
+python -u chemeleon/scripts/evaluate.py \
+    --model_path=hspark1212/Chemeleon_v0.1.1_random_split/model-90sveydm:v1 \
+    --test_data=data/mp-40-random_split/test.csv \
+    --save_path=Chemeleon_v0.1.1_random_split/chemeleon_composition \
+    --wandb_log=True \
+    --wandb_project=Chemeleon_v0.1.1_random_split \
+    --wandb_group=test/composition \
+    --wandb_name=test_chemeleon_clip_comp > eval_clip_comp.log 2>&1
+
+python -u chemeleon/scripts/evaluate.py \
+    --model_path=hspark1212/Chemeleon_v0.1.1_random_split/model-nqz9nhj6:v1 \
+    --test_data=data/mp-40-random_split/test.csv \
+    --save_path=Chemeleon_v0.1.1_random_split/chemeleon_prompt \
+    --wandb_log=True \
+    --wandb_project=Chemeleon_v0.1.1_random_split \
+    --wandb_group=test/prompt \
+    --wandb_name=test_chemeleon_clip_prompt > eval_clip_prompt.log 2>&1
