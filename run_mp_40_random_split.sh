@@ -41,7 +41,7 @@ python -u run.py \
 # evaluation
 python -u chemeleon/scripts/evaluate.py \
     --model_path=hspark1212/Chemeleon_v0.1.1_random_split/model-90sveydm:v1 \
-    --test_data=data/mp-40-random_split/test.csv \
+    --test_data=data/mp-40/random_split/test.csv \
     --save_path=Chemeleon_v0.1.1_random_split/chemeleon_composition \
     --wandb_log=True \
     --wandb_project=Chemeleon_v0.1.1_random_split \
@@ -50,7 +50,7 @@ python -u chemeleon/scripts/evaluate.py \
 
 python -u chemeleon/scripts/evaluate.py \
     --model_path=hspark1212/Chemeleon_v0.1.1_random_split/model-nqz9nhj6:v1 \
-    --test_data=data/mp-40-random_split/test.csv \
+    --test_data=data/mp-40/random_split/test.csv \
     --save_path=Chemeleon_v0.1.1_random_split/chemeleon_prompt \
     --wandb_log=True \
     --wandb_project=Chemeleon_v0.1.1_random_split \

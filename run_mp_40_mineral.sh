@@ -24,7 +24,7 @@ python -u run.py \
 # evaluation
 python -u chemeleon/scripts/evaluate.py \
     --model_path=hspark1212/Chemeleon_v0.1.1_mineral/model-bwy55zfv:v1 \
-    --test_data=data/mp-40-mineral/test.csv \
+    --test_data=data/mp-40/mineral/test.csv \
     --save_path=Chemeleon_v0.1.1_mineral/chemeleon_clip_mineral \
     --wandb_log=True \
     --wandb_project=Chemeleon_v0.1.1_mineral \
