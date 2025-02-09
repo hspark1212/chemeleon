@@ -60,6 +60,8 @@ def test_evaluate(
     model = Chemeleon.load_from_checkpoint(model_path)  # pylint: disable=E1120
     model.eval()
     text_targets = model.hparams.text_targets
+    if isinstance(text_targets, str):
+        text_targets = [text_targets]
     print(f"Text targets: {text_targets}")
 
     # read test data
