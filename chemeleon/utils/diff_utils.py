@@ -310,6 +310,7 @@ class D3PM(nn.Module):
         x_t_atom_types: torch.Tensor,
         t_per_node: torch.Tensor,
         noise: torch.Tensor,
+        return_pred_q_posterior_logits: bool = False,
     ):
         pred_q_posterior_logits = self.q_posterior_logits(
             pred_x_start_logits, x_t_atom_types, t_per_node, is_x_0_one_hot=True
@@ -326,4 +327,7 @@ class D3PM(nn.Module):
         sample = torch.argmax(
             pred_q_posterior_logits + gumbel_noise * nonzero_mask, dim=-1
         )
-        return sample
+        if return_pred_q_posterior_logits:
+            return sample, pred_q_posterior_logits
+        else:
+            return sample

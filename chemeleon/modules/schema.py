@@ -17,10 +17,10 @@ class TrajectoryStep(BaseModel):
     frac_coords: Tensor
     lattices: Tensor
     batch_idx: Tensor
-    atom_types_probs: Optional[Tensor] = None
 
     class Config:
         arbitrary_types_allowed = True
+        extra = "allow"
 
 
 class TrajectoryContainer(BaseModel):

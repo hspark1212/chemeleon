@@ -309,6 +309,7 @@ class Chemeleon(BaseModule):
         texts: Optional[Union[str, List[str]]] = None,
         cond_scale: float = 2.0,
         step_lr: float = 1e-5,
+        return_atoms: bool = True,
     ):
         """Sample from the model
 
@@ -322,6 +323,8 @@ class Chemeleon(BaseModule):
                 Defaults to 2.0.
             step_lr (float, optional): step size for Langevin dynamics.
                 Defaults to 1e-5.
+            return_atoms (bool, optional): return atoms or not.
+                Defaults to True.
         """
         # construct a batch
         if isinstance(natoms, int):
@@ -403,11 +406,12 @@ class Chemeleon(BaseModule):
                 else torch.zeros((num_nodes, self.max_atoms)).to(self.device)
             )
             pred_x_start_logits = pred_a  # [B_n, max_atoms]
-            a_t_minus_1 = self.d3pm.p_logits(
+            a_t_minus_1, pred_q_posterior_logits = self.d3pm.p_logits(
                 pred_x_start_logits=pred_x_start_logits,
                 x_t_atom_types=a_t,
                 t_per_node=batched_t[batch_idx],
                 noise=rand_a,
+                return_pred_q_posterior_logits=True,
             )
             # update the state for lattice
             alphas = self.beta_scheduler.alphas[t]
@@ -417,7 +421,10 @@ class Chemeleon(BaseModule):
             c1 = (1 - alphas) / torch.sqrt(1 - alphas_cumprod)
             rand_l = torch.randn_like(l_T) if t > 1 else torch.zeros_like(l_T)
             rand_l = rand_l * mask_lattice_matrix
-            l_t_minus_1 = c0 * (l_t - c1 * pred_l) + sigmas * rand_l
+            # posterior mean and std
+            mean_l = c0 * (l_t - c1 * pred_l)
+            std_l = sigmas
+            l_t_minus_1 = mean_l + std_l * rand_l
             l_t_minus_1 = l_t_minus_1 * mask_lattice_matrix
             # clip the lattice matrix when t = T (for the first step of prediction)
             # otherwise, the lattice matrix could be diverged when the first prediction is too large
@@ -428,13 +435,16 @@ class Chemeleon(BaseModule):
             sigma_norm = self.sigma_scheduler.sigmas_norm[t]
             adjacent_sigma_x = self.sigma_scheduler.sigmas[t - 1]
             step_size = sigma_x**2 - adjacent_sigma_x**2
+
+            rand_x = torch.randn_like(x_T) if t > 1 else torch.zeros_like(x_T)
+            pred_x = pred_x * torch.sqrt(sigma_norm)
+            # posterior mean and std
+            mean_x = x_t - step_size * pred_x
             std_x = torch.sqrt(
                 (adjacent_sigma_x**2 * (sigma_x**2 - adjacent_sigma_x**2))
                 / (sigma_x**2)
             )
-            rand_x = torch.randn_like(x_T) if t > 1 else torch.zeros_like(x_T)
-            pred_x = pred_x * torch.sqrt(sigma_norm)
-            x_t_minus_05 = x_t - step_size * pred_x + std_x * rand_x
+            x_t_minus_05 = mean_x + std_x * rand_x
 
             ### Corrector ###
             _, _, pred_x = self.model_predictions(
@@ -462,9 +472,18 @@ class Chemeleon(BaseModule):
                 frac_coords=x_t_minus_1 % 1.0,
                 lattices=l_t_minus_1,
                 batch_idx=batch_idx,
+                timestep=batched_t,
+                q_posterior_logits_a=pred_q_posterior_logits,
+                mean_l=mean_l,
+                std_l=std_l,
+                mean_x=mean_x,
+                std_x=std_x,
             )
             trajectory_container[t - 1] = trajectory_step
-            yield trajectory_container.get_atoms(t=t - 1)
+            if return_atoms:
+                yield trajectory_container.get_atoms(t=t - 1)
+            else:
+                yield trajectory_step
 
     def sample(
         self,
@@ -473,16 +492,19 @@ class Chemeleon(BaseModule):
         n_samples: int,
         cond_scale: float = 2.0,
         step_lr: float = 1e-5,
+        return_atoms: bool = True,
         return_trajectory: bool = False,
         stream: bool = False,
     ):
         natoms = [n_atoms] * n_samples
         texts = [text_input] * n_samples
         if stream:
-            return self._sample_generator(natoms, texts, cond_scale, step_lr)
+            return self._sample_generator(
+                natoms, texts, cond_scale, step_lr, return_atoms
+            )
         else:
             trajectory = list(
-                self._sample_generator(natoms, texts, cond_scale, step_lr)
+                self._sample_generator(natoms, texts, cond_scale, step_lr, return_atoms)
             )
             if return_trajectory:
                 return trajectory
