@@ -69,27 +69,30 @@ def test_evaluate(
     if not path_test_data.exists():
         raise FileNotFoundError(f"{path_test_data} does not exist.")
     df_test = pd.read_csv(path_test_data)
+    print(f"{len(df_test)} test data loaded from {path_test_data}.")
 
     # create save path
     path_save = Path(save_path)
     path_save.mkdir(parents=True, exist_ok=True)
 
     # skip if already evaluated materials
-    path_tmp_results = path_save / "results_tmp.csv"
-    if path_tmp_results.exists():
-        df_results = pd.read_csv(path_tmp_results)
+    path_results = path_save / "results.csv"
+    if path_results.exists():
+        df_results = pd.read_csv(path_results)
         evaluated_materials = df_results["material_id"].values
         df_test = df_test[~df_test["material_id"].isin(evaluated_materials)]
         print(
-            f"Skip {len(evaluated_materials)} evaluated materials out of {len(df_test)}."
+            f"Found {len(evaluated_materials)} evaluated materials out of {len(df_test)}."
         )
+    else:
+        df_results = pd.DataFrame()
 
     # set mace calculator
     mace_calc = mace_mp(default_dtype=mace_dtype, device=mace_device)
 
     # start evaluation
-    collections = defaultdict(list)
     for i, row in tqdm(df_test.iterrows()):
+        collections = defaultdict(list)
         print(f"Evaluate {i} structure ({row['material_id']})...")
         # get test structure
         test_st = Structure.from_str(row["cif"], fmt="cif")
@@ -163,30 +166,30 @@ def test_evaluate(
             for n, st in enumerate(gen_st_list):
                 collections[f"gen_structure_{n}"].append(st.to(fmt="cif"))
 
-            # save results every 10 iterations
-            if i % 10 == 0:
-                df_results = pd.DataFrame(collections)
-                df_results.to_csv(path_tmp_results, index=False)
+            # append results
+            df_row = pd.DataFrame(collections)
+            df_results = pd.concat([df_results, df_row], ignore_index=True)
+            if len(df_results) % 10 == 0:
+                df_results.to_csv(path_results, index=False)
+
         except Exception as e:  # pylint: disable=W0703
             print(f"Error: {e}")
 
     # mean results
-    mean_entry = {}
-    for k, v in collections.items():
+    log_dict = {}
+    for k in df_results.columns:
         if k.startswith("gen_structure") or k == "ref_structure" or k == "material_id":
             continue
-        mean_entry[f"mean_{k}"] = np.nanmean(v)
-    collections.update(mean_entry)
-
-    # save results
-    df_results = pd.DataFrame(collections)
-    df_results.to_csv(path_save / "results.csv", index=False)
-    print(f"Results saved to {path_save / 'results.csv'}")
+        mean_value = np.nanmean(df_results[k])
+        df_results[f"mean_{k}"] = mean_value
+        log_dict[f"mean_{k}"] = mean_value
+    df_results.to_csv(path_results, index=False)
 
     # log
     if wandb_log:
         wandb.init(project=wandb_project, group=wandb_group, name=wandb_name)
-        wandb.log({k: v for k, v in collections.items() if k.startswith("mean")})
+        # log for only mean values
+        wandb.log(log_dict)
         wandb.save(str(path_save / "results.csv"))
         wandb.finish()
 

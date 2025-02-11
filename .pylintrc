@@ -640,6 +640,7 @@ disable=
 	W1514, # unspecified-encoding
 	W0123, # eval-used
 	E1130, # invalid-unary-operand-type
+        E1131, # unsupported-binary-operation
 	E1101, # no-member
         E1102, # not-callable
 	E1120, # no-value-for-parameter
