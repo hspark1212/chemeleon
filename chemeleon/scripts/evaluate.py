@@ -70,6 +70,20 @@ def test_evaluate(
         raise FileNotFoundError(f"{path_test_data} does not exist.")
     df_test = pd.read_csv(path_test_data)
 
+    # create save path
+    path_save = Path(save_path)
+    path_save.mkdir(parents=True, exist_ok=True)
+
+    # skip if already evaluated materials
+    path_tmp_results = path_save / "results_tmp.csv"
+    if path_tmp_results.exists():
+        df_results = pd.read_csv(path_tmp_results)
+        evaluated_materials = df_results["material_id"].values
+        df_test = df_test[~df_test["material_id"].isin(evaluated_materials)]
+        print(
+            f"Skip {len(evaluated_materials)} evaluated materials out of {len(df_test)}."
+        )
+
     # set mace calculator
     mace_calc = mace_mp(default_dtype=mace_dtype, device=mace_device)
 
@@ -149,6 +163,10 @@ def test_evaluate(
             for n, st in enumerate(gen_st_list):
                 collections[f"gen_structure_{n}"].append(st.to(fmt="cif"))
 
+            # save results every 10 iterations
+            if i % 10 == 0:
+                df_results = pd.DataFrame(collections)
+                df_results.to_csv(path_tmp_results, index=False)
         except Exception as e:  # pylint: disable=W0703
             print(f"Error: {e}")
 
@@ -161,8 +179,6 @@ def test_evaluate(
     collections.update(mean_entry)
 
     # save results
-    path_save = Path(save_path)
-    path_save.mkdir(parents=True, exist_ok=True)
     df_results = pd.DataFrame(collections)
     df_results.to_csv(path_save / "results.csv", index=False)
     print(f"Results saved to {path_save / 'results.csv'}")
