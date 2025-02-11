@@ -82,7 +82,7 @@ def test_evaluate(
         evaluated_materials = df_results["material_id"].values
         df_test = df_test[~df_test["material_id"].isin(evaluated_materials)]
         print(
-            f"Found {len(evaluated_materials)} evaluated materials out of {len(df_test)}."
+            f"Found {len(evaluated_materials)} evaluated materials. {len(df_test)} will be evaluated."
         )
     else:
         df_results = pd.DataFrame()
