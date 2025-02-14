@@ -197,6 +197,9 @@ def test_evaluate(
 def test_valid(gen_st_list: list[Structure]):
     valid_gen_st_list = []
     for st in gen_st_list:
+        if len(st) == 1:
+            valid_gen_st_list.append(st)
+            continue
         # check if the lattice length < 60A
         if max(st.lattice.abc) > 60:
             continue
